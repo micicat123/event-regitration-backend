@@ -19,7 +19,8 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { CreateUpdateEventDto } from './dto/create-update-event.dto';
 import firebase from 'firebase/compat/app';
-import { getArrayFromSnap } from 'src/common/getArrayFromSnapshot';
+import { SearchEventDto } from './dto/search-event.dto';
+import { deletePastEvents } from 'src/common/deletePastEvents';
 
 @Injectable()
 export class EventService {
@@ -75,7 +76,7 @@ export class EventService {
       );
       const snapshot = await get(eventsQuery);
 
-      const eventArray = await getArrayFromSnap(snapshot);
+      const eventArray = await deletePastEvents(snapshot);
 
       eventArray.sort((a, b) => {
         const dateA = new Date(a.date);
@@ -107,8 +108,30 @@ export class EventService {
       }
 
       const snapshot = await get(eventsQuery);
-      const eventArray = await getArrayFromSnap(snapshot);
+      const eventArray = await deletePastEvents(snapshot);
       return eventArray;
+    } catch (error) {
+      console.error('Error retrieving events:', error);
+      throw error;
+    }
+  }
+
+  async getSearchedEvents(location: string, date: string) {
+    try {
+      const db = getDatabase();
+
+      const eventsRef = ref(db, 'events');
+      const dateQuery = query(eventsRef, orderByChild('date'), startAt(date));
+      const snapshot = await get(dateQuery);
+      const filteredEvents = [];
+      snapshot.forEach((childSnapshot) => {
+        const eventData = childSnapshot.val();
+        if (eventData.location.includes(location)) {
+          filteredEvents.push(eventData);
+        }
+      });
+      const limitedEvents = filteredEvents.slice(0, 15);
+      return limitedEvents;
     } catch (error) {
       console.error('Error retrieving events:', error);
       throw error;

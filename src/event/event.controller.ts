@@ -15,6 +15,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateUpdateEventDto } from './dto/create-update-event.dto';
+import { SearchEventDto } from './dto/search-event.dto';
 
 @Controller('event')
 export class EventController {
@@ -68,6 +69,18 @@ export class EventController {
     @Param('last_date') lastDate: string,
   ) {
     const response = await this.eventService.getUpcomingEvents(lastDate);
+    reply.send(response);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get('search/:location/:date')
+  async getSearchedEvents(
+    @Res() reply: FastifyReply,
+    @Param('location') location: string,
+    @Param('date') date: string,
+  ) {
+    const response = await this.eventService.getSearchedEvents(location, date);
     reply.send(response);
   }
 }
