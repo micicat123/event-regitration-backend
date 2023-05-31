@@ -31,7 +31,7 @@ export class EventService {
     const db = getDatabase();
     const event_id = uuidv4();
 
-    set(ref(db, 'events/' + event_id), {
+    await set(ref(db, 'events/' + event_id), {
       eventName: createEventDto.eventName,
       location: createEventDto.location,
       date: createEventDto.date,
@@ -42,7 +42,7 @@ export class EventService {
       userId: user_id,
     });
 
-    set(ref(db, 'users/' + user_id + '/events/' + event_id), true);
+    await set(ref(db, 'users/' + user_id + '/events/' + event_id), true);
   }
 
   async updateEvent(updateEventDto: CreateUpdateEventDto, event_id: string) {
