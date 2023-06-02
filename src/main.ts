@@ -10,6 +10,7 @@ import { ServiceAccount } from 'firebase-admin';
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import fastifyCookie from 'fastify-cookie';
+const fileUpload = require('fastify-file-upload');
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -63,6 +64,7 @@ async function bootstrap() {
   initSwagger(app);
   app.enableCors();
   app.register(fastifyCookie);
+  app.register(fileUpload);
 
   await app.listen(8000);
 }

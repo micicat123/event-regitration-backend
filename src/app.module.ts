@@ -7,6 +7,7 @@ import { JwtStrategy } from './auth/jwt/jwt.strategy';
 import { AuthService } from './auth/auth.service';
 import { EventModule } from './event/event.module';
 import { RegistrationModule } from './registration/registration.module';
+import { UploadModule } from './upload/upload.module';
 dotenv.config();
 
 @Module({
@@ -21,6 +22,7 @@ dotenv.config();
     }),
     EventModule,
     RegistrationModule,
+    UploadModule,
   ],
   providers: [JwtStrategy, AuthService],
   exports: [PassportModule, JwtModule],

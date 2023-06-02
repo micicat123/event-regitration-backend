@@ -22,16 +22,16 @@ export class AuthService {
   }
 
   async userId(request: FastifyRequest): Promise<string> {
-    const cookie = request.headers['cookie'];
-    const jwtCookie = cookie
-      .split(';')
-      .find((c) => c.trim().startsWith('jwt='));
-
-    if (!jwtCookie) {
+    let jwt;
+    try {
+      const cookie = request.headers['cookie'];
+      const jwtCookie = cookie
+        .split(';')
+        .find((c) => c.trim().startsWith('jwt='));
+      jwt = jwtCookie.split('=')[1];
+    } catch (e) {
       throw new Error('Failed to verify JWT token');
     }
-
-    const jwt = jwtCookie.split('=')[1];
 
     try {
       const data = await this.jwtService.verify(jwt, {
