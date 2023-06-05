@@ -1,9 +1,21 @@
-import { DataSnapshot, getDatabase, ref, remove } from 'firebase/database';
+import {
+  DataSnapshot,
+  equalTo,
+  get,
+  getDatabase,
+  orderByChild,
+  query,
+  ref,
+  remove,
+} from 'firebase/database';
 
-export async function deletePastEvents(snapshot: DataSnapshot) {
+export async function deletePastEvents() {
   try {
-    const eventArray = [];
+    const deletedEventIds = [];
     const db = getDatabase();
+    const eventsRef = ref(db, 'events');
+    const eventsQuery = query(eventsRef);
+    const snapshot = await get(eventsQuery);
     const currentTime = Date.now();
 
     snapshot.forEach((childSnapshot) => {
@@ -14,12 +26,25 @@ export async function deletePastEvents(snapshot: DataSnapshot) {
         const eventKey = childSnapshot.key;
         const eventRef = ref(db, 'events/' + eventKey);
         remove(eventRef);
-      } else {
-        eventArray.push(eventData);
+        deletedEventIds.push(eventKey);
       }
     });
 
-    return eventArray;
+    for (const event_id of deletedEventIds) {
+      const registrationsRef = ref(db, 'registrations/');
+      const registrationsQuery = query(
+        registrationsRef,
+        orderByChild('eventId'),
+        equalTo(event_id),
+      );
+      get(registrationsQuery).then((snapshot) => {
+        snapshot.forEach((childSnapshot) => {
+          const registrationKey = childSnapshot.key;
+          const registrationRef = ref(db, `registrations/${registrationKey}`);
+          remove(registrationRef);
+        });
+      });
+    }
   } catch (error) {
     throw error;
   }

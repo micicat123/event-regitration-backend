@@ -20,7 +20,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { CreateUpdateEventDto } from './dto/create-update-event.dto';
 import firebase from 'firebase/compat/app';
 import { SearchEventDto } from './dto/search-event.dto';
-import { deletePastEvents } from 'src/common/deletePastEvents';
+import { getArrayFromSnap } from 'src/common/getArrayFromSnapshot';
 
 @Injectable()
 export class EventService {
@@ -76,7 +76,7 @@ export class EventService {
       );
       const snapshot = await get(eventsQuery);
 
-      const eventArray = await deletePastEvents(snapshot);
+      const eventArray = await getArrayFromSnap(snapshot);
 
       eventArray.sort((a, b) => {
         const dateA = new Date(a.date);
@@ -108,7 +108,7 @@ export class EventService {
       }
 
       const snapshot = await get(eventsQuery);
-      const eventArray = await deletePastEvents(snapshot);
+      const eventArray = await getArrayFromSnap(snapshot);
       return eventArray;
     } catch (error) {
       console.error('Error retrieving events:', error);
