@@ -1,15 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import {
-  DataSnapshot,
-  child,
-  endAt,
   equalTo,
   get,
   getDatabase,
   limitToFirst,
-  onValue,
   orderByChild,
-  orderByValue,
   query,
   ref,
   set,
@@ -18,8 +13,7 @@ import {
 } from 'firebase/database';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateUpdateEventDto } from './dto/create-update-event.dto';
-import firebase from 'firebase/compat/app';
-import { SearchEventDto } from './dto/search-event.dto';
+import * as admin from 'firebase-admin';
 import { getArrayFromSnap } from 'src/common/getArrayFromSnapshot';
 
 @Injectable()
@@ -42,7 +36,62 @@ export class EventService {
       userId: user_id,
     });
 
-    await set(ref(db, 'users/' + user_id + '/events/' + event_id), true);
+    //send email notification
+    const sgMail = require('@sendgrid/mail');
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    admin
+      .auth()
+      .listUsers()
+      .then((listUsersResult) => {
+        listUsersResult.users.forEach((user) => {
+          const msg = {
+            to: user.email,
+            from: 'noreplay.mici@gmail.com',
+            subject: `New event: ${createEventDto.eventName}`,
+            text: `Hello,
+
+We are excited to announce a new event: ${createEventDto.eventName}!
+
+Date: ${createEventDto.date}
+Time: ${createEventDto.hour}
+Location: ${createEventDto.location}
+
+This event is a fantastic opportunity to go out and be yourself. We have limited spots available, so make sure to mark your calendar and secure your spot.
+
+If you have any questions or need further information, feel free to reach out to us.
+
+Thank you for your attention, and we look forward to seeing you at the event.
+
+Best regards,
+Marcel Zep
+Event Coordinator`,
+            html: `<p>Hello,</p>
+
+<p>We are excited to announce a new event: <strong>${createEventDto.eventName}</strong>!</p>
+<p><strong>Date:</strong> ${createEventDto.date}</p>
+<p><strong>Time:</strong> ${createEventDto.hour}</p>
+<p><strong>Location:</strong> ${createEventDto.location}</p>
+<p>This event is a fantastic opportunity to go out and be yourself. We have limited spots available, so make sure to mark your calendar and secure your spot.</p>
+<p>If you have any questions or need further information, feel free to reach out to us.</p>
+<p>Thank you for your attention, and we look forward to seeing you at the event.</p>
+<p>Best regards,<br>
+Marcel Zep<br>
+Event Coordinator</p>
+`,
+          };
+          sgMail
+            .send(msg)
+            .then(() => {
+              console.log(`Email sent to ${user.email}`);
+            })
+            .catch((error) => {
+              console.error(`Error sending email to ${user.email}:`, error);
+            });
+        });
+      })
+      .catch((error) => {
+        console.log('Error fetching users:', error);
+      });
   }
 
   async updateEvent(updateEventDto: CreateUpdateEventDto, event_id: string) {
