@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import {
-  DataSnapshot,
   equalTo,
   get,
   getDatabase,
@@ -10,7 +9,6 @@ import {
   remove,
   set,
 } from 'firebase/database';
-import { getArrayFromSnap } from 'src/common/getArrayFromSnapshot';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()

@@ -13,8 +13,7 @@ import {
 } from 'firebase/database';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateUpdateEventDto } from './dto/create-update-event.dto';
-import * as admin from 'firebase-admin';
-import { getArrayFromSnap } from 'src/common/getArrayFromSnapshot';
+import { getArrayFromSnap } from '../common/getArrayFromSnapshot';
 
 @Injectable()
 export class EventService {
@@ -37,6 +36,7 @@ export class EventService {
     });
 
     //send email notification
+    /*
     const sgMail = require('@sendgrid/mail');
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     admin
@@ -91,7 +91,7 @@ Event Coordinator</p>
       })
       .catch((error) => {
         console.log('Error fetching users:', error);
-      });
+      });*/
   }
 
   async updateEvent(updateEventDto: CreateUpdateEventDto, event_id: string) {

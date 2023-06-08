@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Res } from '@nestjs/common';
+import { Body, Controller, Post, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserRegisterDto } from './dto/user-register.dto';
 import { FastifyReply } from 'fastify';
@@ -11,7 +11,12 @@ export class AuthController {
   @Post('register')
   async registerUser(@Body() userRegisterDto: UserRegisterDto) {
     await this.authService.registerUser(userRegisterDto);
-    return { message: 'User registered successfully' };
+    const registeredUser = {
+      email: userRegisterDto.email,
+      firstName: userRegisterDto.firstName,
+      lastName: userRegisterDto.lastName,
+    };
+    return { user: registeredUser };
   }
 
   @Post('login')
@@ -31,6 +36,7 @@ export class AuthController {
   @Post('logout')
   async logout(@Res() reply: FastifyReply) {
     reply.header('Set-Cookie', `jwt=; HttpOnly; Path=/; `);
-    reply.send('logged out');
+    reply.status(200);
+    reply.send({ message: 'logged out' });
   }
 }

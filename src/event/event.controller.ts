@@ -11,11 +11,10 @@ import {
 } from '@nestjs/common';
 import { EventService } from './event.service';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { AuthService } from 'src/auth/auth.service';
+import { AuthService } from '../auth/auth.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateUpdateEventDto } from './dto/create-update-event.dto';
-import { SearchEventDto } from './dto/search-event.dto';
 
 @Controller('event')
 export class EventController {
@@ -34,7 +33,15 @@ export class EventController {
   ) {
     const user_id: string = await this.authService.userId(request);
     await this.eventService.createEvent(createEventDto, user_id);
-    reply.send('Event created successfully');
+    const createdEvent = {
+      eventName: createEventDto.eventName,
+      location: createEventDto.location,
+      date: createEventDto.date,
+      hour: createEventDto.hour,
+      maxUsers: createEventDto.maxUsers,
+      description: createEventDto.description,
+    };
+    reply.send({ event: createdEvent });
   }
 
   @ApiBearerAuth()
@@ -46,7 +53,15 @@ export class EventController {
     @Param('event_id') event_id: string,
   ) {
     await this.eventService.updateEvent(updateEventDto, event_id);
-    reply.send('Event updated successfully');
+    const updatedEvent = {
+      eventName: updateEventDto.eventName,
+      location: updateEventDto.location,
+      date: updateEventDto.date,
+      hour: updateEventDto.hour,
+      maxUsers: updateEventDto.maxUsers,
+      description: updateEventDto.description,
+    };
+    reply.send({ event: updatedEvent });
   }
 
   @ApiBearerAuth()

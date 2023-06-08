@@ -1,5 +1,4 @@
 import {
-  DataSnapshot,
   equalTo,
   get,
   getDatabase,

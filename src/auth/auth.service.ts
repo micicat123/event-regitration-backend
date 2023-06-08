@@ -94,6 +94,8 @@ export class AuthService {
         );
       } else if (error.code == 'auth/email-already-in-use') {
         throw new BadRequestException('This email address is already in use.');
+      } else if (error.code == 'auth/invalid-email') {
+        throw new BadRequestException('Email is badly formatted.');
       }
     }
   }

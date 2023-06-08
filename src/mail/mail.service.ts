@@ -7,9 +7,8 @@ import {
   query,
   ref,
 } from 'firebase/database';
-import { getArrayFromSnap } from 'src/common/getArrayFromSnapshot';
 import * as admin from 'firebase-admin';
-import { deletePastEvents } from 'src/common/deletePastEvents';
+import { deletePastEvents } from '../common/deletePastEvents';
 
 @Injectable()
 export class MailService {

@@ -10,7 +10,7 @@ import {
 import { UploadService } from './upload.service';
 import { ApiBody, ApiConsumes, ApiParam } from '@nestjs/swagger';
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { AuthService } from 'src/auth/auth.service';
+import { AuthService } from '../auth/auth.service';
 
 @Controller('upload')
 export class UploadController {
@@ -45,44 +45,55 @@ export class UploadController {
     @Param('id') id?: string,
   ) {
     try {
-      const user_id: string = await this.authService.userId(request);
       let s3Key;
+      let user_id: string;
 
       if (folder != 'events' && folder != 'profile_pictures') {
         response.status(400);
-        response.send('Invalid folder');
+        response.send({ message: 'Invalid folder' });
       } else {
         //delete current image if any
         if (folder == 'events') {
           s3Key = await this.uploadService.getEventImageKey(id);
         } else {
+          user_id = await this.authService.userId(request);
           s3Key = await this.uploadService.getUserImageKey(user_id);
         }
         if (s3Key != '') {
           await this.uploadService.deleteImage(s3Key);
         }
 
-        //upload new image
-        const key = await this.uploadService.uploadFile(
-          request.body.file.data,
-          request.body.file.name,
-          folder,
-          request.body.file.mimetype,
-        );
+        if (request.body.file) {
+          //upload new image
+          const key = await this.uploadService.uploadFile(
+            request.body.file.data,
+            request.body.file.name,
+            folder,
+            request.body.file.mimetype,
+          );
 
-        //update database
-        if (folder == 'events') {
-          await this.uploadService.updateEvent(key, id);
+          //update database
+          if (folder == 'events') {
+            await this.uploadService.updateEvent(key, id);
+          } else {
+            await this.uploadService.updateUser(key, user_id);
+          }
+
+          response.status(201);
+          response.send({ message: 'image successfully uploaded' });
         } else {
-          await this.uploadService.updateUser(key, user_id);
+          console.log('FIle is not present in request');
+          response.status(500);
+          response.send({
+            message: `File is not present in request`,
+          });
         }
-
-        response.status(201);
-        response.send('image successfully uploaded');
       }
     } catch (error) {
       response.status(500);
-      response.send(`Failed to upload image file: ${error.message}`);
+      response.send({
+        message: `Failed to upload image file: ${error.message}`,
+      });
     }
   }
 
@@ -99,7 +110,7 @@ export class UploadController {
   ) {
     if (folder != 'events' && folder != 'profile_pictures') {
       response.status(400);
-      response.send('Invalid folder');
+      response.send({ message: 'Invalid folder' });
     } else {
       let s3Key: string;
 
@@ -115,9 +126,10 @@ export class UploadController {
         response.header('Content-Type', image.Metadata['contenttype']);
         response.send(image.Body);
       } catch (error) {
-        console.error(error);
         response.status(500);
-        response.send(`Failed to retrieve image: ${error.message}`);
+        response.send({
+          message: `Failed to retrieve image: ${error.message}`,
+        });
       }
     }
   }

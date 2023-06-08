@@ -9,6 +9,7 @@ export class MailController {
   @Post()
   async sendEmails(@Res() reply: FastifyReply) {
     await this.mailService.sendEmails();
-    reply.send('Mails sent successfully.');
+    reply.status(200);
+    reply.send({ message: 'Mails sent successfully.' });
   }
 }

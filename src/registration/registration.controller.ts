@@ -9,7 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { RegistrationService } from './registration.service';
-import { AuthService } from 'src/auth/auth.service';
+import { AuthService } from '../auth/auth.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { FastifyReply, FastifyRequest } from 'fastify';
@@ -31,7 +31,7 @@ export class RegistrationController {
   ) {
     const user_id: string = await this.authService.userId(request);
     await this.registrationService.addRegistration(event_id, user_id);
-    reply.send('Registered to event successfully.');
+    reply.send({ message: 'Registered to event successfully.' });
   }
 
   @ApiBearerAuth()
@@ -42,7 +42,7 @@ export class RegistrationController {
     @Param('registration_id') registration_id: string,
   ) {
     await this.registrationService.deleteRegistration(registration_id);
-    reply.send('Unregistered from event successfully');
+    reply.send({ message: 'Unregistered from event successfully' });
   }
 
   @ApiBearerAuth()
