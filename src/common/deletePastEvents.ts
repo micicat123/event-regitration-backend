@@ -29,6 +29,7 @@ export async function deletePastEvents() {
       }
     });
 
+    /*
     for (const event_id of deletedEventIds) {
       const registrationsRef = ref(db, 'registrations/');
       const registrationsQuery = query(
@@ -43,7 +44,7 @@ export async function deletePastEvents() {
           remove(registrationRef);
         });
       });
-    }
+    }*/
   } catch (error) {
     throw error;
   }

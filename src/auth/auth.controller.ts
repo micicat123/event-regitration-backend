@@ -1,8 +1,20 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserRegisterDto } from './dto/user-register.dto';
-import { FastifyReply } from 'fastify';
 import { UserLoginDto } from './dto/user-login.dto';
+import { FastifyReply, FastifyRequest } from 'fastify';
+import * as admin from 'firebase-admin';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
+import { AuthenticatedRequest } from 'src/interfaces/authenticatedRequest';
 
 @Controller('auth')
 export class AuthController {
@@ -38,5 +50,16 @@ export class AuthController {
     reply.header('Set-Cookie', `jwt=; HttpOnly; Path=/; `);
     reply.status(200);
     reply.send({ message: 'logged out' });
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get()
+  async chekckAdmin(
+    @Req() request: AuthenticatedRequest,
+    @Res() reply: FastifyReply,
+  ) {
+    const user = await admin.auth().getUser(request.user.uid);
+    reply.send({ user: user });
   }
 }

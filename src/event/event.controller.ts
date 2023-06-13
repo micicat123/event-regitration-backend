@@ -15,6 +15,7 @@ import { AuthService } from '../auth/auth.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateUpdateEventDto } from './dto/create-update-event.dto';
+import { AuthenticatedRequest } from 'src/interfaces/authenticatedRequest';
 
 @Controller('event')
 export class EventController {
@@ -29,10 +30,9 @@ export class EventController {
   async createEvent(
     @Body() createEventDto: CreateUpdateEventDto,
     @Res() reply: FastifyReply,
-    @Req() request: FastifyRequest,
+    @Req() request: AuthenticatedRequest,
   ) {
-    const user_id: string = await this.authService.userId(request);
-    await this.eventService.createEvent(createEventDto, user_id);
+    await this.eventService.createEvent(createEventDto, request.user.uid);
     const createdEvent = {
       eventName: createEventDto.eventName,
       location: createEventDto.location,
@@ -69,10 +69,11 @@ export class EventController {
   @Get('user')
   async getEventsByUserId(
     @Res() reply: FastifyReply,
-    @Req() request: FastifyRequest,
+    @Req() request: AuthenticatedRequest,
   ) {
-    const user_id: string = await this.authService.userId(request);
-    const response = await this.eventService.getEventsByUserId(user_id);
+    const response = await this.eventService.getEventsByUserId(
+      request.user.uid,
+    );
     reply.send(response);
   }
 

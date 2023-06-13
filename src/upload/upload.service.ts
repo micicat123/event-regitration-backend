@@ -36,7 +36,7 @@ export class UploadService {
   }
 
   async retrieveImage(key: string) {
-    try {
+    if (key) {
       const object = await s3
         .getObject({
           Bucket: AWS_S3_BUCKET_NAME,
@@ -45,9 +45,8 @@ export class UploadService {
         .promise();
 
       return object;
-    } catch (error) {
-      console.log(error);
-      throw new Error(`Failed to retrieve image file: ${error}`);
+    } else {
+      return -1;
     }
   }
 

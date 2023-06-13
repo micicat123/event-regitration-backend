@@ -390,8 +390,8 @@ describe('AppController (e2e)', () => {
           expect(response.body.message).toBe('Invalid folder');
         });
     });
-    /*
-    it('should upload image to event folder in AWS S3', async () => {
+
+    it.skip('should upload image to event folder in AWS S3', async () => {
       return request(app.getHttpServer())
         .post('/upload/events/2952053d-28f8-4546-9165-c2179219c283')
         .attach('file', './test/images/test.png')
@@ -399,6 +399,32 @@ describe('AppController (e2e)', () => {
         .then((response) => {
           expect(response.body.message).toBe('image successfully uploaded');
         });
-    });*/
+    });
+  });
+
+  describe('/upload (GET)', () => {
+    it('shouldnt get image, because of invalid repository', async () => {
+      return request(app.getHttpServer())
+        .get('/upload/wrongRepo')
+        .expect(400)
+        .then((response) => {
+          expect(response.body.message).toBe('Invalid folder');
+        });
+    });
+
+    it('shouldn get image from events folder', async () => {
+      return request(app.getHttpServer())
+        .get('/upload/events/2952053d-28f8-4546-9165-c2179219c283')
+        .expect(200)
+        .then((response) => {});
+    });
+
+    it('shouldn get users profile picture', async () => {
+      return request(app.getHttpServer())
+        .get('/upload/profile_pictures')
+        .set('cookie', `jwt=${userToken}`)
+        .expect(200)
+        .then((response) => {});
+    });
   });
 });

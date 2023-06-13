@@ -9,6 +9,7 @@ import {
   remove,
   set,
 } from 'firebase/database';
+import { getArrayFromSnap } from 'src/common/getArrayFromSnapshot';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -55,6 +56,45 @@ export class RegistrationService {
         eventData.push(data);
       });
       await Promise.all(promises);
+      return eventData;
+    } catch (error) {
+      console.error('Error retrieving registrations:', error);
+      throw error;
+    }
+  }
+
+  async getPastRegistrations(user_id) {
+    try {
+      const db = getDatabase();
+
+      const registrationsRef = ref(db, 'registrations');
+      const registrationQuery = query(
+        registrationsRef,
+        orderByChild('userId'),
+        equalTo(user_id),
+      );
+      const snapshot = await get(registrationQuery);
+
+      const event_ids = [];
+      snapshot.forEach((childSnapshot) => {
+        const eventData = childSnapshot.val();
+        event_ids.push(eventData.eventId);
+      });
+
+      const eventData = [];
+
+      for (const event_id of event_ids) {
+        const eventRef = ref(db, `events/${event_id}`);
+        const eventSnapshot = await get(eventRef);
+        const event = eventSnapshot.val();
+
+        const currentDate = new Date().toISOString().split('T')[0];
+
+        if (event.date < currentDate) {
+          eventData.push({ event_id, ...event });
+        }
+      }
+
       return eventData;
     } catch (error) {
       console.error('Error retrieving registrations:', error);

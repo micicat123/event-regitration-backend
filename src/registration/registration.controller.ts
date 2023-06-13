@@ -13,6 +13,7 @@ import { AuthService } from '../auth/auth.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { FastifyReply, FastifyRequest } from 'fastify';
+import { AuthenticatedRequest } from 'src/interfaces/authenticatedRequest';
 
 @Controller('registration')
 export class RegistrationController {
@@ -26,11 +27,10 @@ export class RegistrationController {
   @Post(':event_id')
   async addRegistration(
     @Res() reply: FastifyReply,
-    @Req() request: FastifyRequest,
+    @Req() request: AuthenticatedRequest,
     @Param('event_id') event_id: string,
   ) {
-    const user_id: string = await this.authService.userId(request);
-    await this.registrationService.addRegistration(event_id, user_id);
+    await this.registrationService.addRegistration(event_id, request.user.uid);
     reply.send({ message: 'Registered to event successfully.' });
   }
 
@@ -50,11 +50,23 @@ export class RegistrationController {
   @Get()
   async getUsersRegistrations(
     @Res() reply: FastifyReply,
-    @Req() request: FastifyRequest,
+    @Req() request: AuthenticatedRequest,
   ) {
-    const user_id: string = await this.authService.userId(request);
     const response = await this.registrationService.getUsersRegistrations(
-      user_id,
+      request.user.uid,
+    );
+    reply.send(response);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/past')
+  async getUsersPastRegistrations(
+    @Res() reply: FastifyReply,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    const response = await this.registrationService.getPastRegistrations(
+      request.user.uid,
     );
     reply.send(response);
   }

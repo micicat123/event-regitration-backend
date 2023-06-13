@@ -48,7 +48,7 @@ export class UploadController {
       let s3Key;
       let user_id: string;
 
-      if (folder != 'events' && folder != 'profile_pictures') {
+      if (folder !== 'events' && folder !== 'profile_pictures') {
         response.status(400);
         response.send({ message: 'Invalid folder' });
       } else {
@@ -90,6 +90,7 @@ export class UploadController {
         }
       }
     } catch (error) {
+      console.log(error);
       response.status(500);
       response.send({
         message: `Failed to upload image file: ${error.message}`,
@@ -123,8 +124,14 @@ export class UploadController {
 
       try {
         const image: any = await this.uploadService.retrieveImage(s3Key);
-        response.header('Content-Type', image.Metadata['contenttype']);
-        response.send(image.Body);
+        if (image == -1) {
+          response.send({
+            message: `There is no image associated to your object.`,
+          });
+        } else {
+          response.header('Content-Type', image.Metadata['contenttype']);
+          response.send(image.Body);
+        }
       } catch (error) {
         response.status(500);
         response.send({

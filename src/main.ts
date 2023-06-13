@@ -47,7 +47,10 @@ async function bootstrap() {
   });
 
   initSwagger(app);
-  app.enableCors();
+  app.enableCors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  });
   app.register(fastifyCookie);
   app.register(multipart);
 
