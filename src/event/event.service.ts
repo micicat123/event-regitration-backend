@@ -174,9 +174,13 @@ Event Coordinator</p>
       const snapshot = await get(dateQuery);
       const filteredEvents = [];
       snapshot.forEach((childSnapshot) => {
+        const eventId = childSnapshot.key;
         const eventData = childSnapshot.val();
-        if (eventData.location.includes(location)) {
-          filteredEvents.push(eventData);
+        const lowercaseLocation = location.toLowerCase();
+        const lowercaseEventDataLocation = eventData.location.toLowerCase();
+        if (lowercaseEventDataLocation.includes(lowercaseLocation)) {
+          const eventWithId = { id: eventId, ...eventData };
+          filteredEvents.push(eventWithId);
         }
       });
       const limitedEvents = filteredEvents.slice(0, 15);

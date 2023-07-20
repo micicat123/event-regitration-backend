@@ -77,8 +77,6 @@ export class EventController {
     reply.send(response);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
   @Get(':last_date')
   async getUpcomingEvents(
     @Res() reply: FastifyReply,
@@ -88,15 +86,13 @@ export class EventController {
     reply.send(response);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
   @Get('search/:location/:date')
   async getSearchedEvents(
     @Res() reply: FastifyReply,
     @Param('location') location: string,
     @Param('date') date: string,
   ) {
-    const response = await this.eventService.getSearchedEvents(location, date);
+    const response = await this.eventService.getSearchedEvents(date, location);
     reply.send(response);
   }
 }

@@ -66,6 +66,13 @@ export class AuthService {
       );
     }
 
+    const token = await firebase.auth().currentUser.getIdToken();
+    try {
+      await admin.auth().verifyIdToken(token);
+    } catch (error) {
+      console.error('token is expired');
+    }
+
     return user;
   }
 
@@ -88,6 +95,7 @@ export class AuthService {
 
       return user;
     } catch (error) {
+      console.log(error.code);
       if (error.code == 'auth/weak-password') {
         throw new BadRequestException(
           'Password must be at least 6 characters long.',

@@ -22,13 +22,8 @@ export class AuthController {
 
   @Post('register')
   async registerUser(@Body() userRegisterDto: UserRegisterDto) {
-    await this.authService.registerUser(userRegisterDto);
-    const registeredUser = {
-      email: userRegisterDto.email,
-      firstName: userRegisterDto.firstName,
-      lastName: userRegisterDto.lastName,
-    };
-    return { user: registeredUser };
+    const user = await this.authService.registerUser(userRegisterDto);
+    return { user: user };
   }
 
   @Post('login')
@@ -41,13 +36,13 @@ export class AuthController {
     await this.authService.validateUser(payload);
 
     const token = await this.authService.generateToken(payload);
-    reply.header('Set-Cookie', `jwt=${token}; HttpOnly; Path=/`);
+    reply.header('Set-Cookie', `jwt=${token}; Path=/`);
     reply.send({ token });
   }
 
   @Post('logout')
   async logout(@Res() reply: FastifyReply) {
-    reply.header('Set-Cookie', `jwt=; HttpOnly; Path=/; `);
+    reply.header('Set-Cookie', `jwt=; Path=/; `);
     reply.status(200);
     reply.send({ message: 'logged out' });
   }
@@ -55,7 +50,7 @@ export class AuthController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Get()
-  async chekckAdmin(
+  async getUser(
     @Req() request: AuthenticatedRequest,
     @Res() reply: FastifyReply,
   ) {

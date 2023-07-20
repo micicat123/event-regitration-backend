@@ -53,7 +53,18 @@ export class RegistrationService {
       const promises = event_ids.map(async (eventId) => {
         const eventRef = ref(db, 'events/' + eventId);
         const data = await get(eventRef);
-        eventData.push(data);
+        let registrationId: string | null = null;
+        snapshot.forEach((childSnapshot) => {
+          if (childSnapshot.val().eventId === eventId) {
+            registrationId = childSnapshot.key;
+          }
+        });
+
+        eventData.push({
+          eventId: eventId,
+          registrationId: registrationId,
+          eventData: data,
+        });
       });
       await Promise.all(promises);
       return eventData;

@@ -46,7 +46,6 @@ export class UploadController {
   ) {
     try {
       let s3Key;
-      let user_id: string;
 
       if (folder !== 'events' && folder !== 'profile_pictures') {
         response.status(400);
@@ -56,33 +55,35 @@ export class UploadController {
         if (folder == 'events') {
           s3Key = await this.uploadService.getEventImageKey(id);
         } else {
-          user_id = await this.authService.userId(request);
-          s3Key = await this.uploadService.getUserImageKey(user_id);
+          s3Key = await this.uploadService.getUserImageKey(id);
         }
         if (s3Key != '') {
           await this.uploadService.deleteImage(s3Key);
         }
 
-        if (request.body.file) {
+        const data = await request.file();
+        const imageFile = data.file;
+
+        if (imageFile) {
           //upload new image
           const key = await this.uploadService.uploadFile(
-            request.body.file.data,
-            request.body.file.name,
+            imageFile,
+            data.filename,
             folder,
-            request.body.file.mimetype,
+            data.mimetype,
           );
 
           //update database
           if (folder == 'events') {
             await this.uploadService.updateEvent(key, id);
           } else {
-            await this.uploadService.updateUser(key, user_id);
+            await this.uploadService.updateUser(key, id);
           }
 
           response.status(201);
           response.send({ message: 'image successfully uploaded' });
         } else {
-          console.log('FIle is not present in request');
+          console.log('File is not present in request');
           response.status(500);
           response.send({
             message: `File is not present in request`,
