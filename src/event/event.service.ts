@@ -35,6 +35,8 @@ export class EventService {
       userId: user_id,
     });
 
+    return event_id;
+
     //send email notification
     /*
     const sgMail = require('@sendgrid/mail');
@@ -125,13 +127,22 @@ Event Coordinator</p>
       );
       const snapshot = await get(eventsQuery);
 
-      const eventArray = await getArrayFromSnap(snapshot);
+      const eventArray = [];
 
-      eventArray.sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-        return dateA.getTime() - dateB.getTime();
-      });
+      if (snapshot.exists()) {
+        snapshot.forEach((eventSnapshot) => {
+          const eventId = eventSnapshot.key;
+          const eventData = eventSnapshot.val();
+          eventArray.push({ eventId, ...eventData });
+        });
+
+        eventArray.sort((a, b) => {
+          const dateA = new Date(a.date);
+          const dateB = new Date(b.date);
+          return dateA.getTime() - dateB.getTime();
+        });
+      }
+
       return eventArray;
     } catch (error) {
       console.error('Error retrieving events:', error);
@@ -157,7 +168,12 @@ Event Coordinator</p>
       }
 
       const snapshot = await get(eventsQuery);
-      const eventArray = await getArrayFromSnap(snapshot);
+      const eventArray = [];
+      snapshot.forEach((childSnapshot) => {
+        const eventId = childSnapshot.key;
+        const eventData = childSnapshot.val();
+        eventArray.push({ ...eventData, id: eventId });
+      });
       return eventArray;
     } catch (error) {
       console.error('Error retrieving events:', error);

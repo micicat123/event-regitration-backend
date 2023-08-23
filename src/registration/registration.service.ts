@@ -86,23 +86,30 @@ export class RegistrationService {
       );
       const snapshot = await get(registrationQuery);
 
-      const event_ids = [];
+      const eventRegistrations = [];
       snapshot.forEach((childSnapshot) => {
         const eventData = childSnapshot.val();
-        event_ids.push(eventData.eventId);
+        eventRegistrations.push({
+          eventId: eventData.eventId,
+          registrationId: childSnapshot.key,
+        });
       });
 
       const eventData = [];
 
-      for (const event_id of event_ids) {
-        const eventRef = ref(db, `events/${event_id}`);
+      for (const { eventId, registrationId } of eventRegistrations) {
+        const eventRef = ref(db, `events/${eventId}`);
         const eventSnapshot = await get(eventRef);
         const event = eventSnapshot.val();
 
         const currentDate = new Date().toISOString().split('T')[0];
 
         if (event.date < currentDate) {
-          eventData.push({ event_id, ...event });
+          eventData.push({
+            eventId: eventId,
+            registrationId: registrationId,
+            eventData: event,
+          });
         }
       }
 

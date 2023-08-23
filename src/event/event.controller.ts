@@ -32,8 +32,12 @@ export class EventController {
     @Res() reply: FastifyReply,
     @Req() request: AuthenticatedRequest,
   ) {
-    await this.eventService.createEvent(createEventDto, request.user.uid);
+    const eventId = await this.eventService.createEvent(
+      createEventDto,
+      request.user.uid,
+    );
     const createdEvent = {
+      eventId,
       eventName: createEventDto.eventName,
       location: createEventDto.location,
       date: createEventDto.date,
